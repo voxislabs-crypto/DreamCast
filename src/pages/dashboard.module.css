@@ -1,0 +1,160 @@
+.main {
+  min-height: 100vh;
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 3rem 1.5rem 6rem;
+  display: flex;
+  flex-direction: column;
+  gap: 2.5rem;
+}
+
+.title {
+  font-size: 2.2rem;
+  font-weight: 800;
+}
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.sectionLabel {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #b0aec8;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.optional {
+  text-transform: none;
+  font-weight: 400;
+  color: #666;
+}
+
+/* Genre */
+.genreGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 0.75rem;
+}
+
+.genreBtn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 1rem 0.75rem;
+  background: #131320;
+  border: 1px solid #2a2840;
+  border-radius: 10px;
+  color: #ccc;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: border-color 0.2s, background 0.2s;
+}
+
+.genreBtn.selected {
+  border-color: #7c5cfc;
+  background: #1e1a38;
+  color: #fff;
+}
+
+.genreBtn:hover:not(.selected) {
+  border-color: #4a3880;
+}
+
+.genreEmoji {
+  font-size: 1.6rem;
+}
+
+/* Inputs */
+.textarea,
+.input {
+  width: 100%;
+  background: #131320;
+  border: 1px solid #2a2840;
+  border-radius: 8px;
+  padding: 0.75rem 1rem;
+  color: #e8e8f0;
+  font-size: 0.95rem;
+  font-family: inherit;
+  resize: vertical;
+  transition: border-color 0.2s;
+}
+
+.textarea:focus,
+.input:focus {
+  outline: none;
+  border-color: #7c5cfc;
+}
+
+.charCount {
+  font-size: 0.8rem;
+  color: #555;
+  text-align: right;
+}
+
+/* Avatar */
+.avatarGrid {
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  gap: 1rem;
+}
+
+.fieldLabel {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  font-size: 0.85rem;
+  color: #888;
+}
+
+.skillsGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.skillValue {
+  color: #7c5cfc;
+  font-weight: 700;
+  font-size: 0.95rem;
+}
+
+.slider {
+  accent-color: #7c5cfc;
+  width: 100%;
+}
+
+/* Action */
+.startButton {
+  align-self: center;
+  background: #7c5cfc;
+  color: #fff;
+  border: none;
+  padding: 1rem 3rem;
+  border-radius: 999px;
+  font-size: 1.1rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.15s;
+}
+
+.startButton:hover:not(:disabled) {
+  background: #6346e0;
+  transform: translateY(-2px);
+}
+
+.startButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.error {
+  color: #f56565;
+  font-size: 0.9rem;
+  text-align: center;
+}

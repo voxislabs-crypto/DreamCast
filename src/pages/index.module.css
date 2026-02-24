@@ -1,0 +1,261 @@
+/* Landing page styles */
+
+.main {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5rem;
+  padding: 2rem 1.5rem 6rem;
+}
+
+/* ── Hero ─────────────────────────────────────────────────────────── */
+.hero {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 6rem 1rem 4rem;
+  max-width: 720px;
+}
+
+.heroGlow {
+  position: absolute;
+  top: 30%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 600px;
+  height: 400px;
+  background: radial-gradient(ellipse, rgba(99, 60, 255, 0.2) 0%, transparent 70%);
+  pointer-events: none;
+  z-index: -1;
+}
+
+.heroTitle {
+  font-size: clamp(3rem, 8vw, 5.5rem);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 1;
+  margin-bottom: 1.25rem;
+}
+
+.accent {
+  color: #7c5cfc;
+}
+
+.heroTagline {
+  font-size: clamp(1.2rem, 3vw, 1.75rem);
+  color: #b0aec8;
+  margin-bottom: 1rem;
+}
+
+.heroSub {
+  font-size: 1.05rem;
+  color: #888;
+  max-width: 560px;
+  line-height: 1.65;
+  margin-bottom: 2.5rem;
+}
+
+.ctaButton {
+  display: inline-block;
+  background: #7c5cfc;
+  color: #fff;
+  padding: 0.9rem 2.2rem;
+  border-radius: 999px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  transition: background 0.2s, transform 0.15s;
+}
+
+.ctaButton:hover {
+  background: #6346e0;
+  transform: translateY(-2px);
+}
+
+/* ── Sections ─────────────────────────────────────────────────────── */
+.sectionTitle {
+  font-size: 1.8rem;
+  font-weight: 700;
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+/* ── Genre grid ───────────────────────────────────────────────────── */
+.genreSection {
+  width: 100%;
+  max-width: 960px;
+}
+
+.genreGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 1.25rem;
+}
+
+.genreCard {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  padding: 1.4rem 1.6rem;
+  background: #131320;
+  border: 1px solid #2a2840;
+  border-radius: 12px;
+  transition: border-color 0.2s, background 0.2s;
+  cursor: pointer;
+}
+
+.genreCard:hover {
+  border-color: #7c5cfc;
+  background: #1a1a2e;
+}
+
+.genreLabel {
+  font-size: 1.05rem;
+  font-weight: 600;
+}
+
+.genreDesc {
+  font-size: 0.875rem;
+  color: #888;
+  line-height: 1.5;
+}
+
+/* ── How it works ────────────────────────────────────────────────── */
+.howSection {
+  width: 100%;
+  max-width: 680px;
+}
+
+.stepList {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  list-style: none;
+  counter-reset: none;
+}
+
+.stepList li {
+  display: flex;
+  gap: 1.25rem;
+  align-items: flex-start;
+}
+
+.stepNum {
+  flex-shrink: 0;
+  width: 2.2rem;
+  height: 2.2rem;
+  background: #7c5cfc22;
+  border: 1px solid #7c5cfc55;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  color: #a58fff;
+  font-size: 0.9rem;
+}
+
+.stepList p {
+  font-size: 0.9rem;
+  color: #888;
+  margin-top: 0.25rem;
+  line-height: 1.55;
+}
+
+/* ── Pricing ─────────────────────────────────────────────────────── */
+.pricingSection {
+  width: 100%;
+  max-width: 960px;
+}
+
+.pricingGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+  gap: 1.25rem;
+}
+
+.pricingCard {
+  padding: 1.75rem 1.5rem;
+  background: #131320;
+  border: 1px solid #2a2840;
+  border-radius: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.pricingCard.featured {
+  border-color: #7c5cfc;
+  background: #16142a;
+}
+
+.pricingCard h3 {
+  font-size: 1.1rem;
+  font-weight: 700;
+}
+
+.price {
+  font-size: 2.2rem;
+  font-weight: 800;
+}
+
+.price span {
+  font-size: 1rem;
+  color: #888;
+  font-weight: 400;
+}
+
+.pricingCard ul {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  flex: 1;
+}
+
+.pricingCard li {
+  font-size: 0.875rem;
+  color: #bbb;
+  padding-left: 1.1rem;
+  position: relative;
+}
+
+.pricingCard li::before {
+  content: "✓";
+  position: absolute;
+  left: 0;
+  color: #7c5cfc;
+  font-size: 0.75rem;
+}
+
+.planButton,
+.planButtonFeatured {
+  display: block;
+  text-align: center;
+  padding: 0.65rem 1rem;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  margin-top: auto;
+  transition: background 0.2s;
+}
+
+.planButton {
+  background: #2a2840;
+  color: #ccc;
+}
+
+.planButton:hover {
+  background: #363460;
+}
+
+.planButtonFeatured {
+  background: #7c5cfc;
+  color: #fff;
+}
+
+.planButtonFeatured:hover {
+  background: #6346e0;
+}

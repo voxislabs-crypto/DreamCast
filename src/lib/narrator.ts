@@ -5,11 +5,12 @@
  * history (long-context window) for continuity across scenes, generates
  * narrative prose, and proposes 2–3 branching choices per turn.
  *
- * Compatible with any OpenAI-spec API (OpenAI, xAI Grok, etc.) via the
- * OPENAI_BASE_URL environment variable.
+ * Compatible with any OpenAI-spec API (OpenAI, DeepInfra, xAI Grok, etc.)
+ * via the NARRATION_* environment variables.
  */
 
 import type { Avatar, BranchChoice, Genre, Scene, Session } from "@/types";
+import type { RenderMode } from "@/types";
 import { v4 as uuidv4 } from "uuid";
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -112,7 +113,10 @@ async function callNarratorLLM(
   messages: ChatMessage[]
 ): Promise<NarratorLLMOutput> {
   const apiKey = process.env.OPENAI_API_KEY;
-  const baseUrl = process.env.OPENAI_BASE_URL ?? "https://api.openai.com/v1";
+  const baseUrl =
+    process.env.NARRATION_BASE_URL ??
+    process.env.OPENAI_BASE_URL ??
+    "https://api.openai.com/v1";
   const model = process.env.NARRATION_MODEL ?? "gpt-4o";
 
   if (!apiKey) {
@@ -233,7 +237,8 @@ export function buildScene(
   sequenceNumber: number,
   videoUrl?: string,
   outcome?: Scene["outcome"],
-  playerAction?: string
+  playerAction?: string,
+  renderMode?: RenderMode
 ): Scene {
   return {
     id: uuidv4(),
@@ -241,6 +246,7 @@ export function buildScene(
     narrativeText: result.narrativeText,
     choices: result.choices,
     videoUrl,
+    renderMode,
     outcome,
     playerAction,
     environmentTags: result.environmentTags,

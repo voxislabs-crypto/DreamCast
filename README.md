@@ -1,151 +1,194 @@
-# EdgeDream
+# DreamCast / EdgeDream
 
-**EdgeDream** is an AI-powered, choose-your-own-adventure interactive storytelling platform. Stop watching stories — *live them*. Pick a genre, build your avatar, and experience a real-time cinematic adventure where every choice you make shapes what happens next.
+DreamCast is a cost-aware interactive storytelling platform where players shape cinematic, choose-your-own-adventure sessions through text-driven actions. The current scaffold, branded in-app as EdgeDream, includes live narration, deterministic consequence scoring, optional short video generation, content moderation, and subscription-tier limits.
 
----
+The architecture is designed around one core operating rule: do not spend expensive AI video budget on every turn. DreamCast should feel cinematic through narration, pacing, and selective rendering, not constant brute-force generation.
 
-## Features
+## Current Capabilities
 
-- **Live LLM Narration** — Second-person scene generation with long-context continuity across scenes, powered by any OpenAI-compatible API (OpenAI GPT-4o, xAI Grok, etc.)
-- **Consequence & Probability Engine** — Deterministic outcome calculation based on avatar skills, environmental modifiers, and inferred action type. Results feel earned, not random.
-- **Video Clip Chaining** — 5–10 second clips generated via Replicate or Runway, chained frame-to-frame for visual continuity.
-- **Content Moderation** — All player inputs and LLM outputs are checked against the OpenAI Moderation API and a local blocklist before processing.
-- **Subscription Tiers** — Free / Basic ($9/mo) / Premium ($19/mo) / Ultra ($29/mo), with enforced clip and session limits per tier.
-- **Branching Choices** — 2–3 suggested options per scene, or go fully off-script with free-text input.
+- Live second-person narration through an OpenAI-compatible chat API.
+- DeepInfra/DeepSeek-class narration support through `NARRATION_BASE_URL`.
+- Consequence engine that scores actions using avatar skills, environment tags, and inferred action type.
+- Director layer that decides whether each scene should be text-only, ambient, animated-still, or full video.
+- Optional video generation through SiliconFlow, Replicate, or Runway.
+- Previous-frame URL support for visual continuity when using image-to-video providers.
+- Local development stubs when API keys are not configured.
+- Input/output moderation through a blocklist plus OpenAI-compatible moderation calls.
+- Subscription tier limits for clip budgets and session duration.
 
----
+## Cost Strategy
+
+DreamCast is built to keep unit economics survivable:
+
+- Use cheaper OpenAI-compatible narration providers for high-volume story turns.
+- Prefer SiliconFlow for lower-cost video generation when available.
+- Let the Director spend full video only on high-impact beats such as openings, failures, reveals, action, and climaxes.
+- Preserve clip budget for quieter scenes with text or ambient presentation.
+- Keep the next major roadmap item focused on narrative state compression so long sessions do not resend full transcripts.
 
 ## Tech Stack
 
 | Layer | Technology |
 |---|---|
 | Frontend | Next.js 14, React, TypeScript, CSS Modules |
-| Narration | OpenAI / xAI Grok (OpenAI-compatible chat completions) |
-| Video | Replicate (Kling/Luma models) or Runway Gen-3 |
-| Session store | In-memory (dev) / Supabase or Firestore (production) |
-| Billing | Stripe |
-| Auth | NextAuth.js |
-| Voice input | Web Speech API + OpenAI Whisper (planned) |
-
----
+| Narration | OpenAI-compatible chat completions: OpenAI, xAI, DeepInfra, etc. |
+| Director | Local TypeScript render-budget decision layer |
+| Video | SiliconFlow, Replicate, Runway, or local stub |
+| Session store | In-memory development adapter, Supabase/Firestore planned |
+| Billing | Stripe planned |
+| Auth | NextAuth.js planned |
+| Tests | Jest + ts-jest |
 
 ## Architecture
 
-```
-┌─────────────────────────────────────────────────────────────────────┐
-│  Browser (React / Next.js)                                          │
-│  ┌──────────┐  ┌──────────────┐  ┌──────────────┐                  │
-│  │ Landing  │  │  Dashboard   │  │ Session page │                  │
-│  │  page    │  │ (genre/avatar│  │ (scene feed +│                  │
-│  └──────────┘  │  setup)      │  │  choice panel│                  │
-│                └──────────────┘  └──────────────┘                  │
-└───────────────────────────┬─────────────────────────────────────────┘
-                            │ fetch()
-┌───────────────────────────▼─────────────────────────────────────────┐
-│  Next.js API Routes                                                 │
-│  POST /api/sessions           → create session + opening scene      │
-│  GET  /api/sessions/[id]      → fetch session state                 │
-│  POST /api/sessions/[id]/action → process player action             │
-└──────┬──────────────────────────────┬──────────────────────────────┘
-       │                              │
-┌──────▼──────────┐        ┌──────────▼───────────┐
-│ Content         │        │  Consequence Engine   │
-│ Moderation      │        │  (avatar skills +     │
-│ (blocklist +    │        │   env tags → outcome) │
-│  OpenAI API)    │        └──────────┬────────────┘
-└─────────────────┘                  │
-                            ┌────────▼────────────┐
-                            │  LLM Narrator        │
-                            │  (OpenAI / Grok API) │
-                            └────────┬────────────┘
-                                     │
-                            ┌────────▼────────────┐
-                            │  Video Gen Service   │
-                            │  (Replicate / Runway)│
-                            └─────────────────────┘
+```txt
+Browser UI
+  |
+  | POST /api/sessions
+  | POST /api/sessions/[id]/action
+  v
+Next.js API Routes
+  |
+  +-- Content moderation
+  +-- Consequence engine
+  +-- LLM narrator
+  +-- Director render decision
+  +-- Video provider, only when Director approves spend
+  v
+Session store
 ```
 
----
+The important separation is:
+
+- `src/lib/narrator.ts` generates structured narrative scenes.
+- `src/lib/consequenceEngine.ts` makes player outcomes feel earned.
+- `src/lib/director.ts` controls cinematic budget.
+- `src/lib/videoGen.ts` handles provider-specific video generation.
+- `src/lib/sessionStore.ts` persists session state behind a swappable adapter.
+
+## Environment Variables
+
+Copy `.env.example` to `.env.local` and fill in only the providers you want to use.
+
+### Narration
+
+OpenAI:
+
+```env
+OPENAI_API_KEY=sk-...
+OPENAI_BASE_URL=https://api.openai.com/v1
+NARRATION_MODEL=gpt-4o
+```
+
+xAI Grok:
+
+```env
+OPENAI_API_KEY=xai-...
+OPENAI_BASE_URL=https://api.x.ai/v1
+NARRATION_MODEL=grok-3-beta
+```
+
+DeepInfra:
+
+```env
+OPENAI_API_KEY=your-deepinfra-token
+NARRATION_BASE_URL=https://api.deepinfra.com/v1/openai
+NARRATION_MODEL=deepseek-ai/DeepSeek-V3
+```
+
+### Video
+
+SiliconFlow:
+
+```env
+SILICONFLOW_API_KEY=...
+SILICONFLOW_API_BASE=https://api.siliconflow.com/v1
+SILICONFLOW_VIDEO_MODEL=Wan-AI/Wan2.2-I2V-A14B
+```
+
+Replicate:
+
+```env
+REPLICATE_API_TOKEN=r8_...
+VIDEO_MODEL_VERSION=your-model-version
+```
+
+Runway:
+
+```env
+RUNWAY_API_KEY=rw_...
+```
+
+With no video keys, DreamCast returns a stub video URL for local development.
 
 ## Getting Started
-
-### Prerequisites
-
-- Node.js ≥ 18
-- An OpenAI API key (or xAI Grok key with compatible base URL)
-- Optionally: Replicate API token + video model version for video generation
-
-### Setup
 
 ```bash
 git clone https://github.com/voxislabs-crypto/DreamCast
 cd DreamCast
 npm install
-
-# Copy and fill in your environment variables
 cp .env.example .env.local
-```
-
-Edit `.env.local` with your API keys (see `.env.example` for all options).
-
-```bash
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000).
+Open `http://localhost:3000`.
 
-### Running Tests
+## Scripts
 
 ```bash
 npm test
+npm run build
+npm run dev
 ```
-
----
 
 ## Project Structure
 
-```
+```txt
 src/
-├── __tests__/                 Unit tests
-│   ├── consequenceEngine.test.ts
-│   ├── contentModeration.test.ts
-│   ├── sessionStore.test.ts
-│   └── videoGen.test.ts
-├── lib/
-│   ├── consequenceEngine.ts   Probability & outcome resolution
-│   ├── contentModeration.ts   Input/output safety checks
-│   ├── narrator.ts            LLM-powered scene generation
-│   ├── sessionStore.ts        Session persistence adapter
-│   └── videoGen.ts            Short video clip generation
-├── pages/
-│   ├── index.tsx              Landing page
-│   ├── dashboard.tsx          Genre + avatar setup
-│   ├── session/[id].tsx       Live session page
-│   └── api/
-│       └── sessions/          REST API routes
-└── types/
-    └── index.ts               Core domain types
+  __tests__/
+    consequenceEngine.test.ts
+    contentModeration.test.ts
+    director.test.ts
+    sessionStore.test.ts
+    videoGen.test.ts
+  lib/
+    consequenceEngine.ts
+    contentModeration.ts
+    director.ts
+    narrator.ts
+    sessionStore.ts
+    videoGen.ts
+  pages/
+    api/sessions/
+    dashboard.tsx
+    index.tsx
+    session/[id].tsx
+  styles/
+  types/
 ```
 
----
+## Roadmap
 
-## Subscription Tiers
+1. Upgrade Next.js from `14.2.3` to a patched `14.2.x` release.
+2. Add a Story State Compiler to compress scene history into compact world state.
+3. Replace the in-memory session store with Supabase or Firestore.
+4. Add auth and tier enforcement around session creation/action routes.
+5. Persist generated video URLs before provider links expire.
+6. Add branch prediction and speculative generation for latency reduction.
+7. Add narrative-aware moderation so safety checks do not break immersion.
 
-| Tier | Price | Clips/session | Session length | Video | Voice | Cross-session memory |
-|---|---|---|---|---|---|---|
-| Free | $0 | 2 | 5 min | ✗ | ✗ | ✗ |
-| Basic | $9/mo | 10 | 10 min | ✓ | ✓ | ✗ |
-| Premium | $19/mo | 20 | 20 min | ✓ | ✓ | ✓ |
-| Ultra | $29/mo | 50 | 60 min | ✓ | ✓ | ✓ |
+## Validation
 
----
+Current local verification:
 
-## Content Moderation
+```txt
+npm test
+31 passed
 
-All player inputs and generated narrative text pass through two layers before use:
+npm run build
+Compiled successfully
+```
 
-1. **Synchronous blocklist** — hardcoded patterns for the most severe categories, zero latency, no API call required.
-2. **OpenAI Moderation API** — semantic classification across all standard harm categories.
+## Security Note
 
-The platform defaults to general-audience content. Inputs that fail moderation return a `422` error with the flagged categories listed.
-
+The current `next@14.2.3` dependency is known to trigger npm audit advisories. Upgrade Next.js before deploying this app publicly.

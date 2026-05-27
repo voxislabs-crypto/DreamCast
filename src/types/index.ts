@@ -94,6 +94,7 @@ export interface Scene {
   narrativeText: string; // second-person prose from the LLM narrator
   choices: BranchChoice[]; // suggested branches (2–3)
   videoUrl?: string; // short clip URL if video is enabled
+  renderMode?: RenderMode;
   outcome?: SceneOutcome; // result of the previous player action
   /** The actual player input that triggered this scene (used for history replay). */
   playerAction?: string;
@@ -147,6 +148,14 @@ export interface PlayerActionResponse {
   clipsRemaining: number;
 }
 
+export type RenderMode = "text_only" | "ambient_image" | "animated_still" | "video";
+
+export interface DirectorDecision {
+  renderMode: RenderMode;
+  shouldGenerateVideo: boolean;
+  reason: string;
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 // Video generation
 // ─────────────────────────────────────────────────────────────────────────────
@@ -160,5 +169,5 @@ export interface VideoGenerationRequest {
 export interface VideoGenerationResult {
   url: string;
   durationSeconds: number;
-  provider: "replicate" | "runway" | "stub";
+  provider: "replicate" | "runway" | "siliconflow" | "stub";
 }

@@ -99,7 +99,7 @@ export default function Dashboard() {
           <textarea
             className={styles.textarea}
             rows={3}
-            placeholder='e.g. "I'm an archaeologist uncovering a cursed temple in the Amazon…"'
+            placeholder={`e.g. "I'm an archaeologist uncovering a cursed temple in the Amazon..."`}
             value={customScenario}
             onChange={(e) => setCustomScenario(e.target.value)}
             maxLength={300}

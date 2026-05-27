@@ -15,6 +15,7 @@ import { saveSession } from "@/lib/sessionStore";
 import { generateOpeningScene, buildScene } from "@/lib/narrator";
 import { generateVideoClip, narrativeToVideoPrompt } from "@/lib/videoGen";
 import { moderateText } from "@/lib/contentModeration";
+import { decideRenderMode } from "@/lib/director";
 
 export default async function handler(
   req: NextApiRequest,
@@ -60,8 +61,16 @@ export default async function handler(
 
   // Generate opening video clip if tier supports it
   const limits = TIER_LIMITS[body.tier];
+  const directorDecision = decideRenderMode({
+    tier: body.tier,
+    sceneNumber: 1,
+    clipsUsed: 0,
+    maxClipsPerSession: limits.maxClipsPerSession,
+    videoEnabled: limits.videoEnabled,
+    environmentTags: narratorResult.environmentTags,
+  });
   let videoUrl: string | undefined;
-  if (limits.videoEnabled) {
+  if (directorDecision.shouldGenerateVideo) {
     try {
       const videoResult = await generateVideoClip({
         prompt: narrativeToVideoPrompt(narratorResult.narrativeText, body.genre),
@@ -73,7 +82,14 @@ export default async function handler(
     }
   }
 
-  const openingScene = buildScene(narratorResult, 1, videoUrl);
+  const openingScene = buildScene(
+    narratorResult,
+    1,
+    videoUrl,
+    undefined,
+    undefined,
+    directorDecision.renderMode
+  );
   session.scenes.push(openingScene);
   await saveSession(session);
 

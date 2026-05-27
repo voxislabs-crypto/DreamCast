@@ -5,13 +5,19 @@
  */
 
 import type { NextApiRequest, NextApiResponse } from "next";
-import type { PlayerActionRequest, PlayerActionResponse, Session } from "@/types";
+import type {
+  PlayerActionRequest,
+  PlayerActionResponse,
+  Session,
+  SessionStatus,
+} from "@/types";
 import { TIER_LIMITS } from "@/types";
 import { getSession, saveSession } from "@/lib/sessionStore";
 import { evaluateAction } from "@/lib/consequenceEngine";
 import { generateNextScene, buildScene } from "@/lib/narrator";
 import { generateVideoClip, narrativeToVideoPrompt } from "@/lib/videoGen";
 import { moderateText } from "@/lib/contentModeration";
+import { decideRenderMode } from "@/lib/director";
 
 export default async function handler(
   req: NextApiRequest,
@@ -72,7 +78,7 @@ export default async function handler(
     .slice(-3)
     .filter((s) => s.outcome && !s.outcome.success).length;
 
-  let sessionStatus = session.status;
+  let sessionStatus: SessionStatus = session.status;
   if (!outcome.success && recentFailures >= 2) {
     sessionStatus = "game_over";
   }
@@ -85,8 +91,19 @@ export default async function handler(
   );
 
   // ── Video clip ──────────────────────────────────────────────────────────────
+  const directorDecision = decideRenderMode({
+    tier: session.tier,
+    sceneNumber: session.scenes.length + 1,
+    clipsUsed,
+    maxClipsPerSession: limits.maxClipsPerSession,
+    videoEnabled: limits.videoEnabled && sessionStatus === "active",
+    environmentTags: narratorResult.environmentTags,
+    outcomeSuccess: outcome.success,
+    recentScenes: session.scenes,
+  });
+
   let videoUrl: string | undefined;
-  if (limits.videoEnabled && sessionStatus === "active") {
+  if (directorDecision.shouldGenerateVideo) {
     const previousFrameUrl = lastScene?.videoUrl;
     try {
       const videoResult = await generateVideoClip({
@@ -110,7 +127,8 @@ export default async function handler(
       probability: outcome.probability,
       explanation: outcome.explanation,
     },
-    body.input
+    body.input,
+    directorDecision.renderMode
   );
 
   const updatedSession: Session = {
